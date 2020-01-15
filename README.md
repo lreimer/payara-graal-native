@@ -4,6 +4,12 @@ Experiment on running Payara using GraalVM as native image. The idea was to buil
 an UberJar using the Gradle Plugin, then start Payara using the Graal tracing agent
 and then call the `native-image` command with the generated JSON files.
 
+```bash
+$ ./gradlew assemble
+$ ./gradlew microBundle microStart
+$ ./gradlew graalNativeImage
+```
+
 Well, turns out it is not that easy! :disappointed:
 
 The things seems to be that all dependencies are embedded JAR files in the UberJar.
