@@ -17,5 +17,36 @@ payaraMicro {
     deployWar = false
     useUberJar = true
     daemon = false
-    javaCommandLineOptions = ['agentlib:native-image-agent' : 'config-output-dir=build/resources/main/META-INF/native-image']
+    commandLineOptions = [unpackdir: 'build/payara-micro']
+    javaCommandLineOptions = ['agentlib' : 'native-image-agent=config-output-dir=build/native-image']
 }
+
+String getClasspath() {
+    'libs/payara-graal-native-microbundle.jar:payara-micro/runtime/' + file("$buildDir/payara-micro/runtime/").list({d, f-> f ==~ /.*.jar/ } as FilenameFilter)?.join(':payara-micro/runtime/')
+}
+
+task graalNativeImage(description: 'Generate native image with GraalVM', dependsOn: 'microBundle', type: Exec) {
+    workingDir "$buildDir"
+    commandLine = [
+            'native-image',
+            '-cp', getClasspath(),
+            '-H:ConfigurationFileDirectories=native-image/',
+            '-H:+ReportUnsupportedElementsAtRuntime',
+            '-H:+ReportExceptionStackTraces',
+            '-H:+AddAllCharsets',
+            '-H:+TraceClassInitialization',
+            '--no-server',
+            '--enable-http',
+            '--enable-https',
+            'fish.payara.micro.boot.PayaraMicroLauncher',
+            'payara-micro-launcher'
+    ]
+}
+
+task copyEllipticCurveCrypto(type: Copy) {
+    from file(System.getenv("JAVA_HOME") + "/jre/lib/")
+    into "$buildDir"
+    include "libsunec.*"
+}
+
+graalNativeImage.finalizedBy copyEllipticCurveCrypto
