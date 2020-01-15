@@ -1,0 +1,21 @@
+plugins {
+    id 'java'
+    id 'war'
+    id 'fish.payara.micro-gradle-plugin' version '1.0.3'
+}
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    providedCompile 'javax:javaee-api:8.0'
+}
+
+payaraMicro {
+    payaraVersion = '5.194'
+    deployWar = false
+    useUberJar = true
+    daemon = false
+    javaCommandLineOptions = ['agentlib:native-image-agent' : 'config-output-dir=build/resources/main/META-INF/native-image']
+}
